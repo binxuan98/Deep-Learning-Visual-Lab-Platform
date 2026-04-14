@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>历史记录与系统日志</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <strong>历史记录与系统日志</strong>
+      <div>
+        <a href="/pages/home.html">首页</a>
+        <a href="/pages/image_test.html">图片测试</a>
+        <a href="/pages/video_test.html">视频测试</a>
+        <a href="/pages/docs.html">算法说明</a>
+      </div>
+    </div>
+    <div class="container">
+      <div class="card">
+        <h3>历史测试记录</h3>
+        <button onclick="loadHistory()">刷新历史记录</button>
+        <table>
+          <thead>
+            <tr>
+              <th>用户</th>
+              <th>算法</th>
+              <th>结果说明</th>
+              <th>时间</th>
+              <th>输出</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>系统日志</h3>
+        <button onclick="loadLogs()">刷新系统日志</button>
+        <table>
+          <thead>
+            <tr>
+              <th>级别</th>
+              <th>信息</th>
+              <th>时间</th>
+            </tr>
+          </thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <script src="/assets/js/app.js"></script>
+    <script>
+      async function loadHistory() {
+        const result = await requestJSON(API.history);
+        document.getElementById("historyBody").innerHTML = result.history
+          .map(
+            (item) => `
+          <tr>
+            <td>${item.username}</td>
+            <td>${item.algorithm}</td>
+            <td>${item.result_text || "-"}</td>
+            <td>${item.created_at}</td>
+            <td><a href="${item.output_url}" target="_blank">查看输出</a></td>
+          </tr>
+        `
+          )
+          .join("");
+      }
+
+      async function loadLogs() {
+        const result = await requestJSON(API.logs);
+        document.getElementById("logBody").innerHTML = result.logs
+          .map(
+            (item) => `
+          <tr>
+            <td>${item.level}</td>
+            <td>${item.message}</td>
+            <td>${item.created_at}</td>
+          </tr>
+        `
+          )
+          .join("");
+      }
+
+      Promise.all([loadHistory(), loadLogs()]).catch((error) => alert(error.message));
+    </script>
+  </body>
+  </html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>深度学习算法可视化实验平台 - 登录</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <div class="container" style="max-width: 500px; margin-top: 80px;">
+      <div class="card">
+        <h2>深度学习算法可视化实验平台</h2>
+        <p class="small-text">教学演示默认账号：admin / admin123</p>
+        <input id="username" placeholder="请输入用户名" value="admin" />
+        <input id="password" placeholder="请输入密码" type="password" value="admin123" />
+        <button onclick="handleLogin()">登录</button>
+        <div id="loginStatus"></div>
+      </div>
+    </div>
+    <script src="/assets/js/app.js"></script>
+    <script>
+      async function handleLogin() {
+        try {
+          const username = document.getElementById("username").value.trim();
+          const password = document.getElementById("password").value.trim();
+          const result = await requestJSON(API.login, {
+            method: "POST",
+            body: JSON.stringify({ username, password }),
+          });
+          localStorage.setItem("username", result.username);
+          window.location.href = "/pages/home.html";
+        } catch (error) {
+          showStatus("loginStatus", error.message, "error");
+        }
+      }
+    </script>
+  </body>
+  </html>

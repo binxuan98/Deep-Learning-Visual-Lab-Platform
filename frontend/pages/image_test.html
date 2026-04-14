@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图片算法测试</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <strong>图片算法测试页</strong>
+      <div>
+        <a href="/pages/home.html">首页</a>
+        <a href="/pages/algorithms.html">算法导航</a>
+        <a href="/pages/video_test.html">视频测试</a>
+        <a href="/pages/history.html">历史记录</a>
+        <a href="/pages/docs.html">算法说明</a>
+      </div>
+    </div>
+    <div class="container">
+      <div class="card">
+        <h3>1. 上传图片</h3>
+        <input id="imageFile" type="file" accept=".png,.jpg,.jpeg,.bmp" />
+        <button onclick="uploadImage()">上传图片</button>
+        <div id="uploadStatus"></div>
+      </div>
+      <div class="card">
+        <h3>2. 选择算法并运行</h3>
+        <select id="algorithmSelect">
+          <option value="yolo">YOLO 目标检测</option>
+          <option value="segmentation">图像分割</option>
+          <option value="mnist">MNIST 数字识别</option>
+          <option value="super_resolution">超分辨率</option>
+          <option value="texture_style">纹理风格化</option>
+        </select>
+        <button onclick="runAlgorithm()">运行算法</button>
+        <div id="runStatus"></div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h4>上传前预览</h4>
+          <img id="inputPreview" class="result-media" />
+        </div>
+        <div class="card">
+          <h4>算法结果</h4>
+          <img id="outputPreview" class="result-media" />
+          <img id="extraPreview" class="result-media" style="margin-top: 8px;" />
+        </div>
+      </div>
+    </div>
+    <script src="/assets/js/app.js"></script>
+    <script>
+      let currentFilePath = "";
+
+      async function uploadImage() {
+        try {
+          const file = document.getElementById("imageFile").files[0];
+          if (!file) {
+            throw new Error("请先选择图片");
+          }
+          const formData = new FormData();
+          formData.append("file", file);
+          const response = await fetch(API.uploadImage, {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          });
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.message);
+          }
+          currentFilePath = result.file_path;
+          document.getElementById("inputPreview").src = result.file_url;
+          showStatus("uploadStatus", "图片上传成功", "info");
+        } catch (error) {
+          showStatus("uploadStatus", error.message, "error");
+        }
+      }
+
+      async function runAlgorithm() {
+        try {
+          const key = document.getElementById("algorithmSelect").value;
+          if (!currentFilePath) {
+            throw new Error("请先上传图片");
+          }
+          const result = await requestJSON(RUN_API_MAP[key], {
+            method: "POST",
+            body: JSON.stringify({ file_path: currentFilePath }),
+          });
+          document.getElementById("outputPreview").src = result.output_url;
+          document.getElementById("extraPreview").src = result.extra_output_url || "";
+          showStatus("runStatus", result.result_text || "算法执行成功", "info");
+        } catch (error) {
+          showStatus("runStatus", error.message, "error");
+        }
+      }
+    </script>
+  </body>
+  </html>

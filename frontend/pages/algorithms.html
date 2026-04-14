@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>算法导航</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <strong>算法导航页</strong>
+      <div>
+        <a href="/pages/home.html">首页</a>
+        <a href="/pages/image_test.html">图片测试</a>
+        <a href="/pages/video_test.html">视频测试</a>
+        <a href="/pages/history.html">历史记录</a>
+        <a href="/pages/docs.html">算法说明</a>
+      </div>
+    </div>
+    <div class="container">
+      <div class="card">
+        <h2>算法列表</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>算法名称</th>
+              <th>类型</th>
+              <th>输入</th>
+              <th>输出</th>
+              <th>应用场景</th>
+            </tr>
+          </thead>
+          <tbody id="algorithmTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <script src="/assets/js/app.js"></script>
+    <script>
+      async function initPage() {
+        const result = await requestJSON(API.algorithms);
+        const table = document.getElementById("algorithmTable");
+        table.innerHTML = result.algorithms
+          .map(
+            (item) => `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.type}</td>
+            <td>${item.input}</td>
+            <td>${item.output}</td>
+            <td>${item.scenarios}</td>
+          </tr>
+        `
+          )
+          .join("");
+      }
+      initPage().catch((error) => alert(error.message));
+    </script>
+  </body>
+  </html>

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.DS_Store
+.pytest_cache/
+venv/
+.venv/
+data/platform.db
+data/system.log
+uploads/images/*
+uploads/videos/*
+outputs/*
+!uploads/images/.gitkeep
+!uploads/videos/.gitkeep
+!outputs/.gitkeep

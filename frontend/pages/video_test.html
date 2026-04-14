@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>视频算法测试</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <strong>视频算法测试页</strong>
+      <div>
+        <a href="/pages/home.html">首页</a>
+        <a href="/pages/algorithms.html">算法导航</a>
+        <a href="/pages/image_test.html">图片测试</a>
+        <a href="/pages/history.html">历史记录</a>
+        <a href="/pages/docs.html">算法说明</a>
+      </div>
+    </div>
+    <div class="container">
+      <div class="card">
+        <h3>1. 上传视频</h3>
+        <input id="videoFile" type="file" accept=".mp4,.avi,.mov,.mkv" />
+        <button onclick="uploadVideo()">上传视频</button>
+        <div id="uploadStatus"></div>
+      </div>
+      <div class="card">
+        <h3>2. 动作识别演示</h3>
+        <button onclick="runAction()">运行动作识别</button>
+        <div id="runStatus"></div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h4>上传前预览</h4>
+          <video id="inputPreview" controls class="result-media"></video>
+        </div>
+        <div class="card">
+          <h4>算法结果</h4>
+          <video id="outputPreview" controls class="result-media"></video>
+        </div>
+      </div>
+    </div>
+    <script src="/assets/js/app.js"></script>
+    <script>
+      let currentVideoPath = "";
+
+      async function uploadVideo() {
+        try {
+          const file = document.getElementById("videoFile").files[0];
+          if (!file) {
+            throw new Error("请先选择视频");
+          }
+          const formData = new FormData();
+          formData.append("file", file);
+          const response = await fetch(API.uploadVideo, {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          });
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.message);
+          }
+          currentVideoPath = result.file_path;
+          document.getElementById("inputPreview").src = result.file_url;
+          showStatus("uploadStatus", "视频上传成功", "info");
+        } catch (error) {
+          showStatus("uploadStatus", error.message, "error");
+        }
+      }
+
+      async function runAction() {
+        try {
+          if (!currentVideoPath) {
+            throw new Error("请先上传视频");
+          }
+          const result = await requestJSON(RUN_API_MAP.action_recognition, {
+            method: "POST",
+            body: JSON.stringify({ file_path: currentVideoPath }),
+          });
+          document.getElementById("outputPreview").src = result.output_url;
+          showStatus("runStatus", result.result_text, "info");
+        } catch (error) {
+          showStatus("runStatus", error.message, "error");
+        }
+      }
+    </script>
+  </body>
+  </html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>算法说明页</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <strong>算法说明页</strong>
+      <div>
+        <a href="/pages/home.html">首页</a>
+        <a href="/pages/algorithms.html">算法导航</a>
+        <a href="/pages/image_test.html">图片测试</a>
+        <a href="/pages/video_test.html">视频测试</a>
+        <a href="/pages/history.html">历史记录</a>
+      </div>
+    </div>
+    <div class="container">
+      <div id="docList"></div>
+    </div>
+    <script src="/assets/js/app.js"></script>
+    <script>
+      async function initDocs() {
+        const data = await requestJSON(API.docs);
+        const container = document.getElementById("docList");
+        container.innerHTML = data.algorithms
+          .map(
+            (item) => `
+          <div class="card">
+            <h3>${item.name}</h3>
+            <p><strong>用途：</strong>${item.description}</p>
+            <p><strong>输入：</strong>${item.input}</p>
+            <p><strong>输出：</strong>${item.output}</p>
+            <p><strong>适用场景：</strong>${item.scenarios}</p>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      initDocs().catch((error) => alert(error.message));
+    </script>
+  </body>
+  </html>

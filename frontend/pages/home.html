@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>平台首页</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <strong>深度学习算法可视化实验平台</strong>
+      <div>
+        <a href="/pages/home.html">首页</a>
+        <a href="/pages/algorithms.html">算法导航</a>
+        <a href="/pages/image_test.html">图片测试</a>
+        <a href="/pages/video_test.html">视频测试</a>
+        <a href="/pages/history.html">历史记录</a>
+        <a href="/pages/docs.html">算法说明</a>
+        <button onclick="logout()">退出</button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="card">
+        <h2>欢迎使用教学实验平台</h2>
+        <p id="welcomeText"></p>
+        <p>你可以完成：上传样本 → 选择算法 → 运行推理 → 查看结果 → 保存历史。</p>
+      </div>
+      <div class="grid" id="algorithmCards"></div>
+    </div>
+    <script src="/assets/js/app.js"></script>
+    <script>
+      async function initPage() {
+        const username = localStorage.getItem("username");
+        if (!username) {
+          window.location.href = "/login.html";
+          return;
+        }
+        document.getElementById("welcomeText").innerText = `当前用户：${username}`;
+        const data = await requestJSON(API.algorithms);
+        const cards = document.getElementById("algorithmCards");
+        cards.innerHTML = data.algorithms
+          .map(
+            (item) => `
+            <div class="card">
+              <h3>${item.name}</h3>
+              <p>${item.description}</p>
+              <p class="small-text">输入：${item.input}</p>
+              <p class="small-text">输出：${item.output}</p>
+            </div>
+          `
+          )
+          .join("");
+      }
+      initPage().catch((error) => {
+        alert(error.message);
+      });
+    </script>
+  </body>
+  </html>
