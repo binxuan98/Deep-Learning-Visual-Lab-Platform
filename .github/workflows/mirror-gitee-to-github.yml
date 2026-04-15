@@ -1,0 +1,35 @@
+name: Mirror Gitee to GitHub
+
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mirror-gitee-to-github
+  cancel-in-progress: true
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Fetch Gitee refs and push to GitHub
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git init --initial-branch=mirror repo
+          cd repo
+          git remote add gitee https://gitee.com/binxuan98/deep-learning-visual-lab-platform.git
+          git fetch --prune --prune-tags gitee \
+            '+refs/heads/*:refs/remotes/gitee/*' \
+            '+refs/tags/*:refs/tags/*'
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+          git push --force --prune origin \
+            'refs/remotes/gitee/*:refs/heads/*' \
+            'refs/tags/*:refs/tags/*'
