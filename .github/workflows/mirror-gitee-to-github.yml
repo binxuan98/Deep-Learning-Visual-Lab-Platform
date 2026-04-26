@@ -18,6 +18,21 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Verify required secret
+        env:
+          GITEE_MIRROR_SSH_KEY: ${{ secrets.GITEE_MIRROR_SSH_KEY }}
+        run: |
+          test -n "${GITEE_MIRROR_SSH_KEY}" || { echo "Missing secret: GITEE_MIRROR_SSH_KEY"; exit 1; }
+
+      - name: Configure SSH for Gitee
+        env:
+          GITEE_MIRROR_SSH_KEY: ${{ secrets.GITEE_MIRROR_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${GITEE_MIRROR_SSH_KEY}" > ~/.ssh/gitee_mirror
+          chmod 600 ~/.ssh/gitee_mirror
+          ssh-keyscan -H gitee.com >> ~/.ssh/known_hosts
+
       - name: Fetch Gitee refs and push to GitHub
         env:
           GH_REPO: ${{ github.repository }}
@@ -25,8 +40,9 @@ jobs:
         run: |
           git init --initial-branch=mirror repo
           cd repo
-          git remote add gitee https://gitee.com/binxuan98/deep-learning-visual-lab-platform.git
-          git fetch --prune --prune-tags gitee \
+          git remote add gitee git@gitee.com:binxuan98/deep-learning-visual-lab-platform.git
+          GIT_SSH_COMMAND='ssh -i ~/.ssh/gitee_mirror -o StrictHostKeyChecking=yes' \
+            git fetch --prune --prune-tags gitee \
             '+refs/heads/*:refs/remotes/gitee/*' \
             '+refs/tags/*:refs/tags/*'
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
