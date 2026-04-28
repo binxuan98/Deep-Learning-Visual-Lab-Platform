@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: mirror-gitee-to-github
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   mirror:
