@@ -38,14 +38,29 @@ jobs:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          retry() {
+            local max_attempts="$1"
+            shift
+            local attempt=1
+            until "$@"; do
+              if [ "${attempt}" -ge "${max_attempts}" ]; then
+                echo "Command failed after ${attempt} attempts: $*"
+                return 1
+              fi
+              echo "Attempt ${attempt} failed. Retrying in $((attempt * 20)) seconds..."
+              sleep $((attempt * 20))
+              attempt=$((attempt + 1))
+            done
+          }
+
           git init --initial-branch=mirror repo
           cd repo
           git remote add gitee git@gitee.com:binxuan98/deep-learning-visual-lab-platform.git
-          GIT_SSH_COMMAND='ssh -i ~/.ssh/gitee_mirror -o StrictHostKeyChecking=yes' \
+          retry 3 env GIT_SSH_COMMAND='ssh -i ~/.ssh/gitee_mirror -o StrictHostKeyChecking=yes -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=3' \
             git fetch --prune --prune-tags gitee \
             '+refs/heads/*:refs/remotes/gitee/*' \
             '+refs/tags/*:refs/tags/*'
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
-          git push --force --prune origin \
+          retry 3 git push --force --prune origin \
             'refs/remotes/gitee/*:refs/heads/*' \
             'refs/tags/*:refs/tags/*'
